@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دستیار پژوهشی جراحی دندان عقل</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        body { font-family: 'Vazirmatn', sans-serif; background-color: #f3f4f6; }
+        .tab-active { border-bottom: 4px solid #3b82f6; color: #3b82f6; font-weight: bold; }
+        .tab-inactive { color: #6b7280; }
+        .hidden-section { display: none; }
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="text-gray-800 antialiased min-h-screen pb-20">
+
+    <header class="bg-blue-700 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold"><i class="fa-solid fa-tooth ml-2"></i>ثبت داده‌های بالینی - IAN Injury</h1>
+                <p class="text-xs text-blue-200">دانشکده دندانپزشکی دانشگاه علوم پزشکی شیراز</p>
+            </div>
+            <div class="text-sm bg-blue-800 px-3 py-1 rounded-full">
+                <span id="currentDate"></span>
+            </div>
+        </div>
+        <!-- Tabs -->
+        <div class="max-w-5xl mx-auto px-4 flex overflow-x-auto mt-2">
+            <button onclick="switchTab('step1')" id="tab-step1" class="tab-active px-4 py-2 whitespace-nowrap"><i class="fa-solid fa-user-check ml-1"></i> ۱. غربالگری و دموگرافیک</button>
+            <button onclick="switchTab('step2')" id="tab-step2" class="tab-inactive px-4 py-2 whitespace-nowrap"><i class="fa-solid fa-x-ray ml-1"></i> ۲. رادیوگرافیک</button>
+            <button onclick="switchTab('step3')" id="tab-step3" class="tab-inactive px-4 py-2 whitespace-nowrap"><i class="fa-solid fa-syringe ml-1"></i> ۳. حین جراحی</button>
+            <button onclick="switchTab('step4')" id="tab-step4" class="tab-inactive px-4 py-2 whitespace-nowrap"><i class="fa-solid fa-stethoscope ml-1"></i> ۴. پیگیری (Follow-up)</button>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 mt-6">
+        
+        <section id="step1" class="glass-panel p-6 rounded-2xl shadow-sm border border-gray-100">
+            <h2 class="text-lg font-bold mb-4 text-blue-800 border-b pb-2">بخش ۱: اطلاعات دموگرافیک و معیارهای ورود</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">کد بیمار (Patient ID)</label>
+                    <input type="text" id="patientId" placeholder="مثال: P-001" class="w-full p-2 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">سن (۱۵ تا ۲۵ سال)</label>
+                    <input type="number" id="age" min="15" max="25" class="w-full p-2 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" onchange="checkAge()">
+                    <p id="ageWarning" class="text-red-500 text-xs mt-1 hidden"><i class="fa-solid fa-triangle-exclamation"></i> سن خارج از محدوده مطالعه است (خروج بیمار)</p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold mb-1">جنسیت</label>
+                    <select id="gender" class="w-full p-2 border rounded-lg bg-gray-50">
+                        <option value="">انتخاب کنید...</option>
+                        <option value="Male">مرد</option>
+                        <option value="Female">زن</option>
+                    </select>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">قد (cm)</label>
+                        <input type="number" id="height" class="w-full p-2 border rounded-lg bg-gray-50" oninput="calculateBMI()">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">وزن (kg)</label>
+                        <input type="number" id="weight" class="w-full p-2 border rounded-lg bg-gray-50" oninput="calculateBMI()">
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 p-3 rounded-lg border border-blue-100 flex items-center justify-between">
+                    <span class="font-semibold text-blue-800">شاخص توده بدنی (BMI):</span>
+                    <span id="bmiResult" class="text-xl font-bold text-blue-600">--</span>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold mb-1">سابقه درمان ارتودنسی</label>
+                    <select class="w-full p-2 border rounded-lg bg-gray-50">
+                        <option value="None">بدون سابقه</option>
+                        <option value="Non-extraction">ارتودنسی بدون کشیدن دندان</option>
+                        <option value="Extraction">ارتودنسی همراه با کشیدن دندان</option>
+                    </select>
+                </div>
+
+                <div class="col-span-1 md:col-span-2 bg-red-50 p-4 rounded-lg border border-red-100">
+                    <label class="block text-sm font-bold text-red-700 mb-2">وضعیت حسی پایه (پیش از جراحی - لب و چانه)</label>
+                    <div class="flex gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="baselineSense" value="normal" class="w-4 h-4 text-blue-600" onchange="checkBaseline()"> طبیعی (اجازه ورود)
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="baselineSense" value="abnormal" class="w-4 h-4 text-red-600" onchange="checkBaseline()"> غیرطبیعی
+                        </label>
+                    </div>
+                    <p id="baselineWarning" class="text-red-600 text-sm mt-2 hidden font-bold"><i class="fa-solid fa-ban"></i> بیمار دارای اختلال حسی پیش‌زمینه است و باید از مطالعه خارج شود.</p>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button onclick="switchTab('step2')" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">مرحله بعد <i class="fa-solid fa-arrow-left mr-2"></i></button>
+            </div>
+        </section>
+
+        <section id="step2" class="hidden-section glass-panel p-6 rounded-2xl shadow-sm border border-gray-100">
+            <h2 class="text-lg font-bold mb-4 text-blue-800 border-b pb-2">بخش ۲: ارزیابی رادیوگرافیک (پانورامیک دیجیتال)</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">دندان شاخص</label>
+                    <select class="w-full p-2 border rounded-lg bg-gray-50">
+                        <option value="48">سمت راست (۴۸)</option>
+                        <option value="38">سمت چپ (۳۸)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">فاصله ریشه تا کانال (معیار ورود)</label>
+                    <select class="w-full p-2 border rounded-lg bg-gray-50 border-red-300">
+                        <option value="Contact">تماس یا همپوشانی (Contact/Overlap)</option>
+                        <option value="0-1mm">بیش از صفر تا ۱ میلی‌متر</option>
+                        <option value="1-2mm">بیش از ۱ تا حداکثر ۲ میلی‌متر</option>
+                    </select>
+                </div>
+
+                <div class="space-y-4 col-span-1 md:col-span-2">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">کورتکس کانال</label>
+                            <select class="w-full p-2 border rounded-lg text-sm">
+                                <option>یکپارچه (Intact)</option><option>نازک‌شده (Thinned)</option><option>غایب (Absent)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">طبقه‌بندی Winter</label>
+                            <select class="w-full p-2 border rounded-lg text-sm">
+                                <option>عمودی</option><option>مزیوانگولار</option><option>افقی</option><option>دیستوانگولار</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">عمق Pell & Gregory</label>
+                            <select class="w-full p-2 border rounded-lg text-sm">
+                                <option>سطح A</option><option>سطح B</option><option>سطح C</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-span-1 md:col-span-2 bg-white border rounded-xl p-4 shadow-sm">
+                    <h3 class="font-bold text-sm mb-3">علائم هفت‌گانه رادیوگرافیک Rood & Shehab (تیک بزنید):</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                        <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 rounded text-blue-600"> انحراف مسیر کانال</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 rounded text-blue-600"> وقفه در خط سفید کانال</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 rounded text-blue-600"> تاریکی ناحیه ریشه</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 rounded text-blue-600"> باریک‌شدن کانال</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 rounded text-blue-600"> باریک‌شدن ریشه</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 rounded text-blue-600"> انحراف ریشه</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 rounded text-blue-600"> انشعاب ریشه (تاریک و دوشاخه)</label>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-between">
+                <button onclick="switchTab('step1')" class="text-gray-500 hover:text-gray-800 px-4 py-2">مرحله قبل</button>
+                <button onclick="switchTab('step3')" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">مرحله بعد <i class="fa-solid fa-arrow-left mr-2"></i></button>
+            </div>
+        </section>
+
+        <section id="step3" class="hidden-section glass-panel p-6 rounded-2xl shadow-sm border border-gray-100">
+            <h2 class="text-lg font-bold mb-4 text-blue-800 border-b pb-2">بخش ۳: اطلاعات حین جراحی</h2>
+            
+            <div class="bg-slate-800 text-white p-6 rounded-xl mb-6 text-center shadow-inner flex flex-col md:flex-row justify-between items-center">
+                <div class="text-right mb-4 md:mb-0">
+                    <h3 class="font-bold text-lg text-blue-300">کرونومتر جراحی</h3>
+                    <p class="text-xs text-gray-400">از اولین برش تا آخرین بخیه</p>
+                </div>
+                <div class="font-mono text-4xl font-bold tracking-widest" id="stopwatch">00:00:00</div>
+                <div class="flex gap-2 mt-4 md:mt-0">
+                    <button onclick="startStopwatch()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg"><i class="fa-solid fa-play"></i> شروع</button>
+                    <button onclick="stopStopwatch()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"><i class="fa-solid fa-stop"></i> پایان</button>
+                    <button onclick="resetStopwatch()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg"><i class="fa-solid fa-rotate-right"></i></button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">نوع اقدام نهایی</label>
+                    <select class="w-full p-2 border rounded-lg bg-gray-50">
+                        <option>استخراج کامل (Complete)</option>
+                        <option>کرونکتومی (Coronectomy)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">میزان برداشت استخوان</label>
+                    <select class="w-full p-2 border rounded-lg bg-gray-50">
+                        <option>بدون برداشت استخوان</option>
+                        <option>کم (بیش از ۰ تا ۳ میلی‌متر)</option>
+                        <option>متوسط (بیش از ۳ تا ۶ میلی‌متر)</option>
+                        <option>زیاد (بیش از ۶ میلی‌متر)</option>
+                    </select>
+                </div>
+                
+                <div class="flex items-center justify-between p-3 border rounded-lg bg-gray-50">
+                    <span class="text-sm font-semibold">سکشن دندان انجام شد؟</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" value="" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+
+                <div class="flex items-center justify-between p-3 border rounded-lg bg-red-50 border-red-200">
+                    <span class="text-sm font-bold text-red-800">مواجهه مستقیم با عصب (رویت عصب)؟</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" value="" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex justify-between">
+                <button onclick="switchTab('step2')" class="text-gray-500 hover:text-gray-800 px-4 py-2">مرحله قبل</button>
+                <button onclick="switchTab('step4')" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">مرحله بعد <i class="fa-solid fa-arrow-left mr-2"></i></button>
+            </div>
+        </section>
+
+        <section id="step4" class="hidden-section glass-panel p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h2 class="text-lg font-bold text-blue-800">بخش ۴: پیگیری حسی (Follow-up)</h2>
+                <select class="p-2 border rounded-lg text-sm bg-blue-50 font-bold text-blue-800 outline-none" id="followUpWeek">
+                    <option value="w1">پیگیری هفته اول (روز ۷)</option>
+                    <option value="w4">پیگیری هفته چهارم (روز ۲۸)</option>
+                    <option value="w8">پیگیری هفته هشتم (روز ۵۶)</option>
+                </select>
+            </div>
+
+            <div class="space-y-6">
+                <!-- 2PD -->
+                <div class="p-4 border rounded-xl bg-gray-50">
+                    <h3 class="font-bold text-sm mb-3"><i class="fa-solid fa-compass text-blue-500 ml-1"></i> تست تمایز دو نقطه (2PD) بر حسب میلی‌متر</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs text-gray-500">سمت جراحی</label>
+                            <input type="number" placeholder="mm" class="w-full p-2 border rounded text-center">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500">سمت کنترل (سالم)</label>
+                            <input type="number" placeholder="mm" class="w-full p-2 border rounded text-center">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VAS & Tests -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="p-4 border rounded-xl bg-gray-50">
+                        <h3 class="font-bold text-sm mb-2">نمره VAS (۰ تا ۱۰)</h3>
+                        <input type="range" min="0" max="10" value="0" class="w-full" oninput="document.getElementById('vasVal').innerText = this.value">
+                        <div class="text-center font-bold text-lg text-blue-600 mt-2" id="vasVal">0</div>
+                    </div>
+                    
+                    <div class="p-4 border rounded-xl bg-gray-50">
+                        <h3 class="font-bold text-sm mb-2">لمس خفیف</h3>
+                        <select class="w-full p-2 border rounded">
+                            <option>طبیعی</option><option>کاهش‌یافته</option><option>غایب</option>
+                        </select>
+                    </div>
+
+                    <div class="p-4 border rounded-xl bg-gray-50">
+                        <h3 class="font-bold text-sm mb-2">تست سوزن‌زنی</h3>
+                        <select class="w-full p-2 border rounded">
+                            <option>طبیعی</option><option>کاهش‌یافته</option><option>غایب</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Final Outcome -->
+                <div class="p-4 border-2 border-blue-200 rounded-xl bg-blue-50">
+                    <h3 class="font-bold text-sm mb-2">تشخیص نهایی وضعیت حسی (Queral-Godoy)</h3>
+                    <select id="finalDiagnosis" class="w-full p-3 border rounded-lg font-bold" onchange="checkOutcomeAlert()">
+                        <option value="Normal">طبیعی</option>
+                        <option value="Paresthesia">پارستزی (Paresthesia)</option>
+                        <option value="Hypoesthesia">هیپواستزی (Hypoesthesia)</option>
+                        <option value="Hyperesthesia">هیپراستزی (Hyperesthesia)</option>
+                        <option value="Dysesthesia">دیساستزی (Dysesthesia)</option>
+                        <option value="Anesthesia">بی‌حسی کامل (Anesthesia)</option>
+                    </select>
+                    <div id="outcomeAlert" class="hidden mt-3 p-3 bg-red-100 border border-red-300 rounded text-red-800 text-sm font-semibold">
+                        <i class="fa-solid fa-triangle-exclamation ml-1"></i> پیامد مثبت (اختلال حسی) ثبت شد. لطفاً فرم ارجاع به استاد راهنما را تکمیل کرده و درمان دارویی را آغاز کنید. بیمار از مطالعه خارج نمی‌شود.
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-between items-center border-t pt-4">
+                <button onclick="switchTab('step3')" class="text-gray-500 hover:text-gray-800 px-4 py-2">مرحله قبل</button>
+                <button onclick="saveData()" class="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 shadow-lg flex items-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i> ثبت نهایی پرونده
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Set Current Date
+        const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('currentDate').innerText = new Date().toLocaleDateString('fa-IR', dateOptions);
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            const tabs = ['step1', 'step2', 'step3', 'step4'];
+            tabs.forEach(t => {
+                document.getElementById(t).classList.add('hidden-section');
+                document.getElementById('tab-' + t).classList.remove('tab-active');
+                document.getElementById('tab-' + t).classList.add('tab-inactive');
+            });
+            document.getElementById(tabId).classList.remove('hidden-section');
+            document.getElementById('tab-' + tabId).classList.add('tab-active');
+            document.getElementById('tab-' + tabId).classList.remove('tab-inactive');
+            window.scrollTo(0, 0);
+        }
+
+        // BMI Calculator
+        function calculateBMI() {
+            let h = parseFloat(document.getElementById('height').value);
+            let w = parseFloat(document.getElementById('weight').value);
+            if(h > 0 && w > 0) {
+                let h_meters = h / 100;
+                let bmi = (w / (h_meters * h_meters)).toFixed(2);
+                let bmiEl = document.getElementById('bmiResult');
+                bmiEl.innerText = bmi;
+                if(bmi > 25) bmiEl.className = "text-xl font-bold text-orange-500";
+                else if (bmi < 18.5) bmiEl.className = "text-xl font-bold text-yellow-500";
+                else bmiEl.className = "text-xl font-bold text-green-600";
+            }
+        }
+
+        // Validation Checks
+        function checkAge() {
+            let age = document.getElementById('age').value;
+            let warn = document.getElementById('ageWarning');
+            if(age && (age < 15 || age > 25)) {
+                warn.classList.remove('hidden');
+            } else {
+                warn.classList.add('hidden');
+            }
+        }
+
+        function checkBaseline() {
+            let val = document.querySelector('input[name="baselineSense"]:checked').value;
+            let warn = document.getElementById('baselineWarning');
+            if(val === 'abnormal') {
+                warn.classList.remove('hidden');
+            } else {
+                warn.classList.add('hidden');
+            }
+        }
+
+        function checkOutcomeAlert() {
+            let val = document.getElementById('finalDiagnosis').value;
+            let alertBox = document.getElementById('outcomeAlert');
+            if(val !== 'Normal') {
+                alertBox.classList.remove('hidden');
+            } else {
+                alertBox.classList.add('hidden');
+            }
+        }
+
+        // Stopwatch Logic
+        let timerInterval;
+        let startTime;
+        let elapsedTime = 0;
+        
+        function updateDisplay(time) {
+            let diff = new Date(time);
+            let hrs = diff.getUTCHours().toString().padStart(2, '0');
+            let mins = diff.getUTCMinutes().toString().padStart(2, '0');
+            let secs = diff.getUTCSeconds().toString().padStart(2, '0');
+            document.getElementById("stopwatch").innerHTML = `${hrs}:${mins}:${secs}`;
+        }
+
+        function startStopwatch() {
+            if (!timerInterval) {
+                startTime = Date.now() - elapsedTime;
+                timerInterval = setInterval(function printTime() {
+                    elapsedTime = Date.now() - startTime;
+                    updateDisplay(elapsedTime);
+                }, 1000);
+            }
+        }
+
+        function stopStopwatch() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+
+        function resetStopwatch() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            elapsedTime = 0;
+            updateDisplay(elapsedTime);
+        }
+
+        // Mock Save Function
+        function saveData() {
+            // In a real app, this would gather all inputs and send to a server/CSV
+            let modal = document.createElement('div');
+            modal.className = "fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50";
+            modal.innerHTML = `
+                <div class="bg-white p-8 rounded-2xl text-center max-w-sm mx-auto shadow-2xl transform transition-all">
+                    <i class="fa-solid fa-circle-check text-5xl text-green-500 mb-4"></i>
+                    <h2 class="text-xl font-bold mb-2">اطلاعات با موفقیت ثبت شد</h2>
+                    <p class="text-sm text-gray-500 mb-6">داده‌های این بیمار در دیتابیس لوکال ذخیره گردید.</p>
+                    <button onclick="this.parentElement.parentElement.remove()" class="bg-blue-600 text-white px-6 py-2 rounded-lg w-full">بستن</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+    </script>
+</body>
+</html>
